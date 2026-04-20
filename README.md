@@ -247,6 +247,10 @@ bambu-homelab/
   migrations/     SQL migration files (also inlined in API)
 ```
 
+## Developer reference
+
+See [AGENTS.md](AGENTS.md) for architecture details, API endpoints, database schema, NATS subjects, and design principles.
+
 ## License
 
 [MIT](LICENSE)
