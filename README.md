@@ -193,6 +193,61 @@ The admin can create user accounts for customers or other people who need to mon
 
 The **Fleet** page shows aggregate statistics across all printers: how many are online, printing, idle, or errored, total print time, and a fleet-wide filament inventory.
 
+## Remote access (optional)
+
+Access your dashboard from anywhere using a Cloudflare Tunnel. No open ports, no port forwarding, no dynamic DNS. Free.
+
+### Prerequisites
+
+- A domain name on Cloudflare (can be a cheap domain, just needs to be managed by Cloudflare)
+- A free Cloudflare account
+
+### Setup
+
+1. **Build the dashboard for production:**
+
+   ```bash
+   cd dashboard && npm install && npx ng build
+   ```
+
+2. **Create a Cloudflare Tunnel:**
+   - Go to [Cloudflare Zero Trust](https://one.dash.cloudflare.com)
+   - Navigate to **Networks > Tunnels > Create a tunnel**
+   - Choose **Cloudflared** as the connector
+   - Copy the tunnel token
+
+3. **Configure the public hostname:**
+   - In the tunnel settings, add a public hostname
+   - Set the subdomain (e.g. `bambu`) and your domain
+   - Set the service to **http://bambu-web:80**
+   - This makes your dashboard available at `bambu.yourdomain.com`
+
+4. **Save the tunnel token:**
+
+   Create a `.env` file in the project root (it's gitignored):
+
+   ```bash
+   echo "CLOUDFLARE_TUNNEL_TOKEN=your-token-here" > .env
+   ```
+
+5. **Start the remote access services:**
+
+   ```bash
+   docker compose --profile remote up -d
+   ```
+
+   This starts two additional containers:
+   - **web** -- nginx serving the Angular build + proxying API/WebSocket/streams
+   - **tunnel** -- Cloudflare tunnel connecting to the web container
+
+Your dashboard is now accessible at `https://bambu.yourdomain.com`. All traffic is encrypted end-to-end by Cloudflare. The JWT authentication on the API protects all endpoints -- no additional auth layer needed.
+
+To stop remote access without affecting local services:
+
+```bash
+docker compose --profile remote down
+```
+
 ## Updating
 
 Pull the latest code and rebuild:
